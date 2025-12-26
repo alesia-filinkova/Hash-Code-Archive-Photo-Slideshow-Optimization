@@ -19,87 +19,79 @@ def random_pair_vertical_photos(vertical_photos):
     return pairs
 
 
-def similar_pair_vertical_photos(vertical_photos):
+def similar_pair_vertical_photos(vertical_photos, k=50):
     """
-    Returns a list of pairs of vertical photos, 
-    combining photos with the most common tags 
-    and the least difference in tag size.
+    A fast greedy implementation for large datasets.
+    k: number of candidates based on the number of tags for each photo
     """
-    photos = vertical_photos.copy()
-    
+    photos = sorted(vertical_photos, key=lambda x: len(x["tags"]))
     if len(photos) % 2 == 1:
         photos = photos[:-1]
-    
-    pairs = []
-    used = set()
 
-    while len(used) < len(photos):
+    used = set()
+    pairs = []
+    n = len(photos)
+
+    for idx, photo in enumerate(photos):
+        if photo["id"] in used:
+            continue
+
+        start = max(0, idx - k)
+        end = min(n, idx + k)
         best_score = -1
-        best_diff = None
         best_pair = None
 
-        for i in range(len(photos)):
-            if photos[i]["id"] in used:
+        for j in range(start, end):
+            candidate = photos[j]
+            if candidate["id"] in used or candidate["id"] == photo["id"]:
                 continue
-            for j in range(i+1, len(photos)):
-                if photos[j]["id"] in used:
-                    continue
-                tags_i = photos[i]["tags"]
-                tags_j = photos[j]["tags"]
+            score = len(photo["tags"] & candidate["tags"])
+            if score > best_score:
+                best_score = score
+                best_pair = candidate
 
-                common = len(tags_i & tags_j)
-                diff_len = abs(len(tags_i) - len(tags_j))
-
-                if common > best_score or (common == best_score and diff_len < best_diff):
-                    best_score = common
-                    best_diff = diff_len
-                    best_pair = (photos[i], photos[j])
-
-        if best_pair is None:
-            break
-
-        pairs.append(best_pair)
-        used.add(best_pair[0]["id"])
-        used.add(best_pair[1]["id"])
+        if best_pair is not None:
+            pairs.append((photo, best_pair))
+            used.add(photo["id"])
+            used.add(best_pair["id"])
 
     return pairs
 
 
-def different_pair_vertical_photos(vertical_photos):
+def different_pair_vertical_photos(vertical_photos, k=50):
     """
-    Returns a list of pairs of vertical photos, 
-    combining photos with the fewest common tags 
-    (the most different tags).
+    Combines photos with minimal tag intersection.
+    k: Number of candidates for finding the minimal intersection
     """
-    photos = vertical_photos.copy()
-    
+    photos = sorted(vertical_photos, key=lambda x: len(x["tags"]))
     if len(photos) % 2 == 1:
         photos = photos[:-1]
-    
-    pairs = []
-    used = set()
 
-    while len(used) < len(photos):
+    used = set()
+    pairs = []
+    n = len(photos)
+
+    for idx, photo in enumerate(photos):
+        if photo["id"] in used:
+            continue
+
+        start = max(0, idx - k)
+        end = min(n, idx + k)
         best_score = float('inf')
         best_pair = None
 
-        for i in range(len(photos)):
-            if photos[i]["id"] in used:
+        for j in range(start, end):
+            candidate = photos[j]
+            if candidate["id"] in used or candidate["id"] == photo["id"]:
                 continue
-            for j in range(i+1, len(photos)):
-                if photos[j]["id"] in used:
-                    continue
-                common = len(photos[i]["tags"] & photos[j]["tags"])
-                
-                if common < best_score:
-                    best_score = common
-                    best_pair = (photos[i], photos[j])
+            score = len(photo["tags"] & candidate["tags"])
+            if score < best_score:
+                best_score = score
+                best_pair = candidate
 
-        if best_pair is None:
-            break
-
-        pairs.append(best_pair)
-        used.add(best_pair[0]["id"])
-        used.add(best_pair[1]["id"])
+        if best_pair is not None:
+            pairs.append((photo, best_pair))
+            used.add(photo["id"])
+            used.add(best_pair["id"])
 
     return pairs
