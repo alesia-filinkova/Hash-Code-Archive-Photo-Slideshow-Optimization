@@ -1,4 +1,6 @@
 import json
+from collections import defaultdict
+
 
 def load_photos_from_json(filename):
     with open(filename, "r", encoding="utf-8") as f:
@@ -40,3 +42,13 @@ def total_score(slideshow):
         slide_score(slideshow[i], slideshow[i+1])
         for i in range(len(slideshow) - 1)
     )
+
+
+def group_slides_by_tag(slides):
+    groups = defaultdict(list)
+
+    for slide in slides:
+        main_tag = next(iter(slide["tags"]))
+        groups[main_tag].append(slide)
+
+    return list(groups.values())
