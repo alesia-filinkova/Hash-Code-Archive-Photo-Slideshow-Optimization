@@ -1,5 +1,5 @@
 import random
-from usefull_functions import interest_score, group_slides_by_tag
+from usefull_functions import interest_score, group_slides_by_tag, nearest_neighbor_group, order_groups_nn
 
 
 def random_slideshow(slides):
@@ -50,21 +50,18 @@ def grouped_slideshow(slides):
     return slideshow
 
 
-def mixed_topics_slideshow(slides):
+def mixed_slideshow(slides):
     groups = group_slides_by_tag(slides)
-    random.shuffle(groups)
+
+    processed_groups = [
+        nearest_neighbor_group(group)
+        for group in groups
+    ]
+
+    ordered_groups = order_groups_nn(processed_groups)
 
     slideshow = []
-    pointers = [0] * len(groups)
-
-    while True:
-        added = False
-        for i, group in enumerate(groups):
-            if pointers[i] < len(group):
-                slideshow.append(group[pointers[i]])
-                pointers[i] += 1
-                added = True
-        if not added:
-            break
+    for group in ordered_groups:
+        slideshow.extend(group)
 
     return slideshow
