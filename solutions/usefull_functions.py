@@ -1,4 +1,7 @@
 import json
+import random
+from collections import defaultdict
+
 
 def load_photos_from_json(filename):
     with open(filename, "r", encoding="utf-8") as f:
@@ -40,3 +43,76 @@ def total_score(slideshow):
         slide_score(slideshow[i], slideshow[i+1])
         for i in range(len(slideshow) - 1)
     )
+
+
+from collections import defaultdict
+
+def group_slides_by_tag(slides):
+    groups = defaultdict(list)
+
+    for slide in slides:
+        main_tag = next(iter(slide["tags"]))
+        groups[main_tag].append(slide)
+
+    return list(groups.values())
+
+
+def nearest_neighbor_group(slides, k=50):
+    if not slides:
+        return []
+
+    slides_left = slides.copy()
+    random.shuffle(slides_left)
+
+    current = slides_left.pop()
+    ordered = [current]
+
+    while slides_left:
+        best_score = -1
+        best_idx = None
+
+        candidates = random.sample(
+            slides_left, 
+            min(k, len(slides_left))
+        )
+
+        for candidate in candidates:
+            score = interest_score(current["tags"], candidate["tags"])
+            if score > best_score:
+                best_score = score
+                best_idx = slides_left.index(candidate)
+
+        current = slides_left.pop(best_idx)
+        ordered.append(current)
+
+    return ordered
+
+
+def order_groups_nn(groups, k=10):
+    groups_left = groups.copy()
+    random.shuffle(groups_left)
+
+    current = groups_left.pop()
+    ordered_groups = [current]
+
+    while groups_left:
+        best_score = -1
+        best_idx = None
+
+        candidates = random.sample(
+            groups_left,
+            min(k, len(groups_left))
+        )
+
+        for group in candidates:
+            score = interest_score(
+                ordered_groups[-1][-1]["tags"],
+                group[0]["tags"]
+            )
+            if score > best_score:
+                best_score = score
+                best_idx = groups_left.index(group)
+
+        ordered_groups.append(groups_left.pop(best_idx))
+
+    return ordered_groups
