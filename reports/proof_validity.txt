@@ -1,0 +1,14 @@
+PROOF: poprawność out.txt
+Slajdy: nagłówek=60000, linie=60000
+Slajdy 1-ID (H): 30000
+Slajdy 2-ID (V+V): 30000
+Użyte unikalne zdjęcia: 90000
+
+Błędy:
+- złe długości linii: 0
+- duplikaty ID: 0
+- nieznane ID: 0
+- 1-ID ale nie H: 0
+- 2-ID ale nie V+V: 0
+
+WYNIK: OK
