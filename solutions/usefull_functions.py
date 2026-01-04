@@ -57,7 +57,7 @@ def group_slides_by_tag(slides):
     return list(groups.values())
 
 
-def nearest_neighbor_group(slides, k=50):
+def nearest_neighbor_group(slides, k=300):
     if not slides:
         return []
 
