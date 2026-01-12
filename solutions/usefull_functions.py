@@ -116,3 +116,43 @@ def order_groups_nn(groups, k=10):
         ordered_groups.append(groups_left.pop(best_idx))
 
     return ordered_groups
+
+
+def delta_swap(slides, i, j):
+    """Zmiana score po zamianie slajdów i oraz j"""
+    n = len(slides)
+    delta = 0
+
+    def score(a, b):
+        return interest_score(a["tags"], b["tags"])
+
+    for idx in [i-1, i, j-1, j]:
+        if 0 <= idx < n-1:
+            delta -= score(slides[idx], slides[idx+1])
+
+    slides[i], slides[j] = slides[j], slides[i]
+
+    for idx in [i-1, i, j-1, j]:
+        if 0 <= idx < n-1:
+            delta += score(slides[idx], slides[idx+1])
+
+    slides[i], slides[j] = slides[j], slides[i]
+    return delta
+
+
+def delta_2opt(slides, i, j):
+    """Zmiana score po odwróceniu fragmentu [i:j]"""
+    if i == 0:
+        before = 0
+    else:
+        before = interest_score(slides[i-1]["tags"], slides[i]["tags"])
+
+    if j == len(slides) - 1:
+        after = 0
+    else:
+        after = interest_score(slides[j]["tags"], slides[j+1]["tags"])
+
+    middle = interest_score(slides[i-1]["tags"], slides[j]["tags"]) + \
+             interest_score(slides[i]["tags"], slides[j+1]["tags"])
+
+    return middle - (before + after)
