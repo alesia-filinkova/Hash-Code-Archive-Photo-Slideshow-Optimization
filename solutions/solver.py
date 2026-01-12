@@ -21,6 +21,49 @@ from io_help import build_slides, write_submission
 from ordering import build_slideshow_order
 from local_search import local_improve
 
+def run_solver(
+    data_dir: str = "../data",
+    out: str | None = None,
+    seed: int = 42,
+    pairing: str = "different",
+    order_method: str = "mixed",
+    k: int = 100,
+    k_group: int = 10,
+    group_key: str = "min",
+    local_iters: int = 0,
+    eval_score: bool = False,
+):
+    random.seed(seed)
+
+    slides = build_slides(pairing, data_dir)
+
+    order = build_slideshow_order(
+        slides,
+        method=order_method,
+        k=k,
+        k_group=k_group,
+        group_key=group_key,
+    )
+
+    if local_iters > 0:
+        order = local_improve(
+            slides,
+            order,
+            iters=local_iters,
+            seed=seed
+        )
+
+    if out is not None:
+        write_submission(slides, order, out)
+
+    score = None
+    if eval_score:
+        slideshow = [slides[i] for i in order]
+        score = total_score(slideshow)
+
+    return slides, order, score
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--data_dir", default="../data", help="Katalog z horizontal_photos.json i vertical_photos.json")
@@ -45,29 +88,23 @@ def main() -> None:
     ap.add_argument("--eval", action="store_true", help="Policz i wypisz score (może być wolne)")
     args = ap.parse_args()
 
-    random.seed(args.seed)
-
-    slides = build_slides(args.pairing, args.data_dir)
-
-    order = build_slideshow_order(
-        slides,
-        method=args.order,
+    slides, order, score = run_solver(
+        data_dir=args.data_dir,
+        out=args.out,
+        seed=args.seed,
+        pairing=args.pairing,
+        order_method=args.order,
         k=args.k,
         k_group=args.k_group,
         group_key=args.group_key,
+        local_iters=args.local_iters,
+        eval_score=args.eval,
     )
-
-    if args.local_iters > 0:
-        order = local_improve(slides, order, iters=args.local_iters, seed=args.seed)
-
-    write_submission(slides, order, args.out)
 
     print(f"Slajdy: {len(slides):,}")
     print(f"Zapisano: {args.out}")
-
-    if args.eval:
-        slideshow = [slides[i] for i in order]
-        print("Wynik:", total_score(slideshow))
+    if score is not None:
+        print("Wynik:", score)
 
 
 if __name__ == "__main__":
