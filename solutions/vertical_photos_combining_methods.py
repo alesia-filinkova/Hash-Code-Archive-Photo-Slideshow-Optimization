@@ -58,7 +58,7 @@ def similar_pair_vertical_photos(vertical_photos, k=50):
     return pairs
 
 
-def different_pair_vertical_photos(vertical_photos, k=50):
+def different_pair_vertical_photos(vertical_photos, k=300):
     """
     Combines photos with minimal tag intersection.
     k: Number of candidates for finding the minimal intersection
