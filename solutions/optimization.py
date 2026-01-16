@@ -1,5 +1,6 @@
 import random
 from usefull_functions import delta_swap, delta_2opt
+import math 
 
 def hill_climbing(slides, iters=10000):
     slides = slides.copy()

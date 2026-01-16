@@ -27,7 +27,7 @@ def create_horizontal_slides(horizontal_photos):
     } for p in horizontal_photos]
 
 
-def create_vertical_slide(photo1, photo2): 
+def create_vertical_slide(photo1, photo2):
     return {
         "photos": [photo1["id"], photo2["id"]],
         "tags": photo1["tags"] | photo2["tags"]
@@ -44,8 +44,6 @@ def total_score(slideshow):
         for i in range(len(slideshow) - 1)
     )
 
-
-from collections import defaultdict
 
 def group_slides_by_tag(slides):
     groups = defaultdict(list)
@@ -72,7 +70,7 @@ def nearest_neighbor_group(slides, k=300):
         best_idx = None
 
         candidates = random.sample(
-            slides_left, 
+            slides_left,
             min(k, len(slides_left))
         )
 
@@ -141,18 +139,25 @@ def delta_swap(slides, i, j):
 
 
 def delta_2opt(slides, i, j):
-    """Zmiana score po odwróceniu fragmentu [i:j]"""
-    if i == 0:
-        before = 0
-    else:
-        before = interest_score(slides[i-1]["tags"], slides[i]["tags"])
+    """Zmiana score po odwróceniu fragmentu [i:j].
+    """
+    n = len(slides)
+    if n < 2:
+        return 0
+    if not (0 <= i < n and 0 <= j < n):
+        raise IndexError("delta_2opt: indeks poza zakresem")
+    if i >= j:
+        return 0
 
-    if j == len(slides) - 1:
-        after = 0
-    else:
-        after = interest_score(slides[j]["tags"], slides[j+1]["tags"])
+    def score(a, b):
+        return interest_score(a["tags"], b["tags"])
+    delta = 0
+    if i > 0:
+        delta -= score(slides[i - 1], slides[i])
+        delta += score(slides[i - 1], slides[j])
 
-    middle = interest_score(slides[i-1]["tags"], slides[j]["tags"]) + \
-             interest_score(slides[i]["tags"], slides[j+1]["tags"])
+    if j < n - 1:
+        delta -= score(slides[j], slides[j + 1])
+        delta += score(slides[i], slides[j + 1])
 
-    return middle - (before + after)
+    return delta
