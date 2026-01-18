@@ -1,93 +1,153 @@
-# Hash Code Archive - Photo Slideshow Optimization
+# Hash Code Archive — Photo Slideshow Optimization
+
+This project implements heuristic and local search algorithms to solve the **Google Hash Code 2019 “Photo Slideshow” challenge**. The goal is to arrange a set of photos into a slideshow that maximizes the total interest score between consecutive slides.
+
+The project combines data preprocessing, heuristic construction, and iterative optimization, making it suitable as a thorough case study in heuristic and local search methods.
+
+---
+
+## Problem Description
+
+Each photo is described by:
+- orientation (`H` – horizontal, `V` – vertical),
+- a set of textual tags.
+
+A **slide** consists of:
+- one horizontal photo, or
+- a pair of vertical photos.
+
+The interest score between two slides `A` and `B` is defined as:
+
+\[
+\text{score}(A, B) = \min \Big(
+\lvert \text{tags}(A) \cap \text{tags}(B) \rvert,\;
+\lvert \text{tags}(A) \setminus \text{tags}(B) \rvert,\;
+\lvert \text{tags}(B) \setminus \text{tags}(A) \rvert
+\Big)
+\]
 
 
+The objective is to **maximize the sum of scores over all consecutive slide pairs** in the slideshow.
 
-## Getting started
+---
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## Implemented Features
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+### 1. Data Preprocessing
+- Efficient loading of JSON data
+- Separation of horizontal and vertical photos
+- Tag representation using Python sets
 
-## Add your files
+### 2. Vertical Photo Pairing
+Implemented strategies:
+- `random` – random pairing
+- `similar` – maximize tag overlap
+- `different` – minimize tag overlap (diversification)
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+### 3. Slide Ordering Heuristics
+- **Random**
+- **Nearest Neighbor (NN)** – greedy local selection
+- **Grouped** – grouping slides by representative tag
+- **Mixed** – grouping + NN inside and between groups
 
+### 4. Local Optimization (Core Optimization Part)
+- **Swap-based hill climbing**
+- **2-opt neighborhood search**
+- **Simulated annealing**
+- Delta-based score evaluation for efficiency
+
+These methods iteratively improve an initial heuristic solution and form the core optimization component of the project.
+
+---
+
+## Running the Solver (CLI)
+
+Example command:
+
+```bash
+python3 solver.py \
+    --data_dir ../data \
+    --out submission.txt \
+    --seed 42 \
+    --pairing different \
+    --order mixed \
+    --k 300 \
+    --k_group 10 \
+    --group_key first \
+    --local_iters 1000 \
+    --eval
 ```
-cd existing_repo
-git remote add origin https://gitlab-stud.elka.pw.edu.pl/afilinko/hash-code-archive-photo-slideshow-optimization.git
-git branch -M main
-git push -uf origin main
-```
 
-## Integrate with your tools
+--- 
 
-- [ ] [Set up project integrations](https://gitlab-stud.elka.pw.edu.pl/afilinko/hash-code-archive-photo-slideshow-optimization/-/settings/integrations)
+## Optimization Strategy
 
-## Collaborate with your team
+The optimization pipeline follows a multi-stage approach:
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+### Heuristic construction  
+Fast generation of a reasonably good initial solution using greedy and grouped heuristics.
 
-## Test and Deploy
+### Iterative local improvement  
+Repeated neighborhood exploration using **swap** and **2-opt** moves to improve the total slideshow score.
 
-Use the built-in continuous integration in GitLab.
+### Stochastic escape mechanisms  
+**Simulated annealing** is applied to probabilistically accept worse moves, allowing the algorithm to escape local optima.
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+### Multi-start strategy  
+The solver is executed multiple times with different random seeds, and the best solution is retained.
 
-***
+This approach balances **exploration** (randomness and stochastic moves) and **exploitation** (greedy improvement), while keeping runtime manageable.
 
-# Editing this README
+---
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+## Experimental Analysis
 
-## Suggestions for a good README
+The project includes extensive empirical evaluation, covering:
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+- comparison of different ordering heuristics,
+- sensitivity analysis of parameters (`k`, `k_group`, number of iterations),
+- trade-offs between runtime and solution quality,
+- evaluation of vertical photo pairing strategies,
+- convergence plots illustrating the behavior of local search methods.
 
-## Name
-Choose a self-explaining name for your project.
+Results, plots, and experiments can be found in:
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+- `reports/`
+- `notebooks/`
+- LaTeX documentation located in `documentation/`
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+---
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+## Key Observations
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+- Pure greedy heuristics quickly stagnate in poor local optima.
+- Local optimization significantly improves solution quality over heuristic-only approaches.
+- The method of pairing vertical photos has a strong impact on the final slideshow score.
+- Introducing randomness is essential for escaping local optima.
+- The best results are obtained using a **mixed heuristic combined with local search**.
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+---
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+## References
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+- Google Hash Code 2019 – *Photo Slideshow* problem statement  
+- Standard literature on local search and combinatorial optimization
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+---
 
 ## License
-For open source projects, say how it is licensed.
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+This project is released under the **MIT License**.
+
+---
+
+## Authors
+
+Developed by **Alesia Filinkova**  and **Sofiya Yedzeika**
+as part of the *Foundations of Optimization* course project.
+
+
+
+
+
+
