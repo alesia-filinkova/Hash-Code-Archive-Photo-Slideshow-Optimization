@@ -19,13 +19,11 @@ A **slide** consists of:
 The interest score between two slides `A` and `B` is defined as:
 
 ```markdown
-\[
-\text{score}(A, B) = \min \Big(
-\lvert \text{tags}(A) \cap \text{tags}(B) \rvert,\;
-\lvert \text{tags}(A) \setminus \text{tags}(B) \rvert,\;
-\lvert \text{tags}(B) \setminus \text{tags}(A) \rvert
-\Big)
-\]
+score(A, B) = min(
+|tags(A) ∩ tags(B)|,
+|tags(A) − tags(B)|,
+|tags(B) − tags(A)|
+)
 ```
 
 
