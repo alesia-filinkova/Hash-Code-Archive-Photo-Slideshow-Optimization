@@ -18,6 +18,7 @@ A **slide** consists of:
 
 The interest score between two slides `A` and `B` is defined as:
 
+```markdown
 \[
 \text{score}(A, B) = \min \Big(
 \lvert \text{tags}(A) \cap \text{tags}(B) \rvert,\;
@@ -25,6 +26,7 @@ The interest score between two slides `A` and `B` is defined as:
 \lvert \text{tags}(B) \setminus \text{tags}(A) \rvert
 \Big)
 \]
+```
 
 
 The objective is to **maximize the sum of scores over all consecutive slide pairs** in the slideshow.
